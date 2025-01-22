@@ -8,7 +8,7 @@ const router = express.Router();
 //ในการกำหนดเส้นทางเป็นไปตามหลักการของ REST API
 //เพิ่ม post, แก้ไข put, ลบ delete, ค้นหา ตรวจสอบ ดึงดู get
 
-router.post("/", travelCtrl.createTravel);
+router.post("/", travelCtrl.uploadTravel, travelCtrl.createTravel);
 
 router.get("/:travellerId", travelCtrl.getAllTravel);
 

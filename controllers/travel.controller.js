@@ -1,57 +1,34 @@
-//ไฟล์ที่เขียนควบคุมการทำงานต่างๆ กับ table ใน database
-//เช่น การเพิ่มข้อมูล(insert/create) การแก้ไขข้อมูล(update)
-// การลบข้อมูล(delete) การค้นหา, ตรวจสอบ, ดึงดู(select/read)
+//File that writes control operations for a table in the database
+//เช่น insert, update, delete, select
+//This file works with travel_tb
 
-const Travel = require("../models/travel.model.js");
+const Travel = require("./../models/travel.model.js");
+const path = require("path");
+const multer = require("multer");
 
-//ฟังก์ชันเพิ่มข้อมูลลงใน travel_tb
+//fuction insert data to travel_tb
 exports.createTravel = async (req, res) => {
   try {
-    const result = await Travel.create(req.body);
+    //ตัวแปร
+    let data = {
+      ...req.body,
+      travelImage: req.file.path.replace("images\\travel\\", ""),
+    };
+
+    const result = await Travel.create(data);
+
     res.status(201).json({
       message: "Travel created successfully",
       data: result,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      message: error.message,
+    });
   }
 };
 
-//ฟังก์ชันแก้ไขข้อมูลการเดินทางใน travel_tb
-exports.editTravel = async (req, res) => {
-  try {
-    const result = await Travel.update(req.body, {
-      where: {
-        travelId: req.params.travelId,
-      },
-    });
-    res.status(200).json({
-      message: "Travel updated successfully",
-      data: result,
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-//ฟังก์ชันลบข้อมูลการเดินทางใน travel_tb
-exports.deleteTravel = async (req, res) => {
-  try {
-    const result = await Travel.destroy({
-      where: {
-        travelId: req.params.travelId,
-      },
-    });
-    res.status(200).json({
-      message: "Travel deleted successfully",
-      data: result,
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-//ฟังก์ชันดึงข้อมูลการเดินทางใน travel_tb
+//func get all travel in travel_tb
 exports.getAllTravel = async (req, res) => {
   try {
     const result = await Travel.findAll({
@@ -71,6 +48,76 @@ exports.getAllTravel = async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      message: error.message,
+    });
   }
 };
+
+//func edit travel in travel_tb
+exports.editTravel = async (req, res) => {
+  try {
+    const result = await Travel.update(req.body, {
+      where: {
+        travelId: req.params.travelId,
+      },
+    });
+    res.status(200).json({
+      message: "Travel updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+//func delete travel in travel_tb
+exports.deleteTravel = async (req, res) => {
+  try {
+    const result = await Travel.destroy({
+      where: {
+        travelId: req.params.travelId,
+      },
+    });
+    res.status(200).json({
+      message: "Travel deeleted successfully",
+      data: result,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
+//Travel Image upload function
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "images/travel");
+  },
+  filename: function (req, file, cb) {
+    cb(
+      null,
+      "travel_" +
+        Math.floor(Math.random() * Date.now()) +
+        path.extname(file.originalname)
+    );
+  },
+});
+exports.uploadTravel = multer({
+  storage: storage,
+  limits: {
+    fileSize: 1000000,
+  },
+  fileFilter: (req, file, cb) => {
+    const fileTypes = /jpeg|jpg|png|gif/;
+    const mimetype = fileTypes.test(file.mimetype);
+    const extname = fileTypes.test(path.extname(file.originalname));
+    if (mimetype && extname) {
+      return cb(null, true);
+    }
+    cb("Error: Images Only!");
+  },
+}).single("travelImage");
