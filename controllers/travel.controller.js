@@ -4,6 +4,7 @@
 
 const Travel = require("./../models/travel.model.js");
 const path = require("path");
+const fs = require("fs");
 const multer = require("multer");
 
 //fuction insert data to travel_tb
@@ -12,7 +13,10 @@ exports.createTravel = async (req, res) => {
     //ตัวแปร
     let data = {
       ...req.body,
-      travelImage: req.file.path.replace("images\\travel\\", ""),
+      //เช็คว่ามีไฟล์รูปภาพหรือไม่
+      travelImage: req.file
+        ? req.file.path.replace("images\\travel\\", "")
+        : "",
     };
 
     const result = await Travel.create(data);
@@ -57,7 +61,37 @@ exports.getAllTravel = async (req, res) => {
 //func edit travel in travel_tb
 exports.editTravel = async (req, res) => {
   try {
-    const result = await Travel.update(req.body, {
+    //ตรวจสอบว่ามีการอัพโหลดรูปภาพหรือไม่
+    //กรณีที่มี ตรวจสอบก่อนว่ามีไฟล์เก่าไหม ถ้ามีให้ลบไฟล์เก่าออก
+    let data = {
+      ...req.body,
+    };
+
+    if (req.file) {
+      //ตรวจสอบว่ามีการอัพโหลดรูปภาพมาเพื่อแก้ไขหรือไม่
+      const travel = await Travel.findOne({
+        //ค้นหารูปเก่า
+        where: {
+          travelId: req.params.travelId,
+        },
+      });
+      if (travel.travelImage) {
+        //กรณีมีรูป
+        const oldImagePath = "images/travel/" + travel.travelImage;
+        //ลบไฟล์เก่าออก
+        fs.unlinkSync(oldImagePath, (err) => {
+          console.log(err);
+        });
+      }
+
+      //อัพโหลดรูปใหม่
+      data.travelImage = req.file.path.replace("images\\travel\\", "");
+    } else {
+      //กรณีไม่มีการอัพโหลดรูป
+      delete data.travelImage;
+    }
+
+    const result = await Travel.update(data, {
       where: {
         travelId: req.params.travelId,
       },
@@ -76,6 +110,19 @@ exports.editTravel = async (req, res) => {
 //func delete travel in travel_tb
 exports.deleteTravel = async (req, res) => {
   try {
+    const travel = await Travel.findOne({
+      where: {
+        travelId: req.params.travelId,
+      },
+    });
+    if (travel.travelImage) {
+      const oldImagePath = "images/travel/" + travel.travelImage;
+      //ลบไฟล์เก่าออก
+      fs.unlinkSync(oldImagePath, (err) => {
+        console.log(err);
+      });
+    }
+
     const result = await Travel.destroy({
       where: {
         travelId: req.params.travelId,
