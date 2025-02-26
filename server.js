@@ -14,6 +14,8 @@ app.use(bodyParser.json()); //จัดการข้อมูลที่เ�
 app.use(cors()) //จัดการเรื่องการเรียกใช้งานข้ามโดเมน
 app.use('/traveller', travellerRoute);
 app.use('/travel', travelRoute);
+app.use("/images/traveller", express.static("images/traveller"));
+app.use("/images/travel", express.static("images/travel"));
 
 //เทสการเรียกใช้งาน web server จาก client/user/ระบบอื่นๆ
 app.get('/', (req, res) => {
