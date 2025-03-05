@@ -84,11 +84,26 @@ exports.editTraveller = async (req, res) => {
             delete data.travellerImage;
         }
 
-        const result = await Traveller.update(data, {
+        let result = await Traveller.update(data, {
             where: {
                 travellerId: req.params.travellerId
             }
         });
+
+        //await Traveller.update(data, {
+        //     where: {
+        //         travellerId: req.params.travellerId
+        //     }
+        // });
+
+
+        //ดึงข้อมูลหลังการอัปเดตข้อมูล
+        result = await Traveller.findOne({
+            where: {
+                travellerId: req.params.travellerId
+            }
+        });
+
         res.status(200).json({
             message: "Traveller updated successfully",
             data: result
