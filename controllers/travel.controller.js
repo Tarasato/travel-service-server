@@ -58,6 +58,32 @@ exports.getAllTravel = async (req, res) => {
   }
 };
 
+//func get travel by travelId in travel_tb
+exports.getTravel = async (req, res) => {
+  try {
+    const result = await Travel.findOne({
+      where: {
+        travelId: req.params.travelId,
+      },
+    });
+    if (result) {
+      res.status(200).json({
+        message: "Travel get successfully",
+        data: result,
+      });
+    } else {
+      res.status(404).json({
+        message: "Travel get failed",
+        data: result,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
 //func edit travel in travel_tb
 exports.editTravel = async (req, res) => {
   try {
@@ -156,6 +182,7 @@ const storage = multer.diskStorage({
 exports.uploadTravel = multer({
   storage: storage,
   limits: {
+    // กำหนดขนาดไฟล์สูงสุดที่จะรับ 1MB
     fileSize: 1000000,
   },
   fileFilter: (req, file, cb) => {

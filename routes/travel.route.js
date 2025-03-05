@@ -12,6 +12,8 @@ router.post("/", travelCtrl.uploadTravel, travelCtrl.createTravel);
 
 router.get("/:travellerId", travelCtrl.getAllTravel);
 
+router.get("/one/:travelId", travelCtrl.getTravel);
+
 router.put("/:travelId", travelCtrl.uploadTravel, travelCtrl.editTravel);
 
 router.delete("/:travelId", travelCtrl.deleteTravel);
